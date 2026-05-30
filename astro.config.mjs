@@ -5,8 +5,6 @@ import pagefind from 'astro-pagefind';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://joecapra.github.io',
-  base: 'xcsoar-docs',
   output: 'static',
   integrations: [pagefind()],
   vite: {
