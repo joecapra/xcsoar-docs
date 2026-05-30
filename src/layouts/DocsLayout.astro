@@ -1,5 +1,6 @@
 ---
 import Layout from './Layout.astro';
+import SearchModal from '../components/SearchModal.astro';
 import { getCollection } from 'astro:content';
 
 interface NavEntry {
@@ -43,12 +44,7 @@ const navItems = allDocs
       XCSoar Docs
     </a>
     <div class="flex-1" />
-    <div id="search-trigger" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-slate-100 hover:bg-slate-200 cursor-pointer text-sm text-slate-500 w-48 transition-colors">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-      </svg>
-      Search docs…
-    </div>
+    <pagefind-modal-trigger class="hidden sm:block" placeholder="Search docs"></pagefind-modal-trigger>
   </header>
 
   <div class="flex pt-14 min-h-screen">
@@ -193,6 +189,8 @@ const navItems = allDocs
       </div>
     </main>
   </div>
+
+  <SearchModal />
 </Layout>
 
 <script>
