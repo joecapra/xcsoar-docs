@@ -8,15 +8,22 @@ interface NavEntry {
   sidebar_position: number;
 }
 
+interface TocHeading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
 interface Props {
   title: string;
   currentSlug: string;
   prevPage?: NavEntry | null;
   nextPage?: NavEntry | null;
   editUrl?: string;
+  headings?: TocHeading[];
 }
 
-const { title, currentSlug, prevPage, nextPage, editUrl } = Astro.props;
+const { title, currentSlug, prevPage, nextPage, editUrl, headings = [] } = Astro.props;
 
 const allDocs = await getCollection('docs');
 const navItems = allDocs
@@ -107,8 +114,28 @@ const navItems = allDocs
       </aside>
     </div>
 
+    <!-- Right TOC -->
+    {headings.length > 0 && (
+      <aside class="fixed top-14 right-0 bottom-0 w-56 overflow-y-auto z-20 hidden xl:block px-4 py-8">
+        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">On this page</p>
+        <ul class="border-l border-slate-200 space-y-1">
+          {headings.map((h) => (
+            <li>
+              <a
+                href={`#${h.slug}`}
+                data-toc={h.slug}
+                class={`toc-link block py-1 text-sm text-slate-500 hover:text-slate-900 transition-colors ${h.depth === 3 ? 'pl-6' : 'pl-4'}`}
+              >
+                {h.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    )}
+
     <!-- Main content -->
-    <main class="flex-1 lg:ml-64 min-w-0">
+    <main class={`flex-1 lg:ml-64 min-w-0 ${headings.length > 0 ? 'xl:mr-56' : ''}`}>
       <div class="max-w-3xl mx-auto px-6 py-10">
         <!-- Page title -->
         <h1 class="text-3xl font-bold text-slate-900 mb-8">{title}</h1>
@@ -175,4 +202,39 @@ const navItems = allDocs
 
   btn?.addEventListener('click', () => sidebar?.classList.toggle('hidden'));
   backdrop?.addEventListener('click', () => sidebar?.classList.add('hidden'));
+
+  // Scroll-spy for right TOC
+  const tocLinks = document.querySelectorAll<HTMLAnchorElement>('a[data-toc]');
+  if (tocLinks.length > 0) {
+    const headingEls = Array.from(tocLinks).map((link) =>
+      document.getElementById(link.dataset.toc!)
+    ).filter(Boolean) as HTMLElement[];
+
+    function setActive(id: string) {
+      tocLinks.forEach((link) => {
+        const isActive = link.dataset.toc === id;
+        link.classList.toggle('text-sky-600', isActive);
+        link.classList.toggle('font-medium', isActive);
+        link.classList.toggle('text-slate-500', !isActive);
+      });
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActive(entry.target.id);
+            break;
+          }
+        }
+      },
+      { rootMargin: '0px 0px -80% 0px', threshold: 0 }
+    );
+
+    headingEls.forEach((el) => observer.observe(el));
+
+    // Set initial active from hash or first heading
+    const initial = location.hash ? location.hash.slice(1) : headingEls[0]?.id;
+    if (initial) setActive(initial);
+  }
 </script>

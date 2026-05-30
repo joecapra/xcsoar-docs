@@ -23,9 +23,10 @@ export async function getStaticPaths() {
 }
 
 const { entry, prevPage, nextPage } = Astro.props;
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
 
 const editUrl = `${GITHUB_BASE}/${entry.id}.tex`;
+const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
 ---
 
 <DocsLayout
@@ -34,6 +35,7 @@ const editUrl = `${GITHUB_BASE}/${entry.id}.tex`;
   prevPage={prevPage}
   nextPage={nextPage}
   editUrl={editUrl}
+  headings={tocHeadings}
 >
   <Content />
 </DocsLayout>
